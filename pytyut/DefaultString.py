@@ -58,11 +58,35 @@ GET_TEST_INFO_REQUEST_DATA = {
         'order': 'desc'
 }
 
-#通过班级简称获取课表的请求数据模板
+# 通过班级简称获取课表的请求数据模板
 GET_COURSE_SCHEDULE_BY_BJH_DATA = {
         'pagination[sort]': 'xsh,kch',
         'pagination[order]': 'asc'
-    }
+}
+
+# 获取所有可选科目的请求数据模板
+GET_SELECTABLE_COURSE_DATA = {
+        'limit': 30,
+        'offset': 0,
+        'sort': 'xh',
+        'order': 'asc'
+}
+
+# 获取选课课程列表的请求数据模板
+GET_SELECT_COURSE_DATA = {
+    'limit': 500,
+    'offset': 0,
+    'sort': 'kch,kxh',
+    'order': 'asc'
+}
+
+# 获取已选择的课程列表请求数据模板
+GET_SELECTED_COURSE_LIST_DATA = {
+        'limit': 30,
+        'offset': 0,
+        'sort': 'kch,kxh',
+        'order': 'asc'
+}
 
 def build_checkLogin_headers(node: str) -> dict:
     """
@@ -108,4 +132,46 @@ def build_get_course_schedule_by_bjh_request_data(class_data: dict) -> dict:
     result["pagination[conditionJson]"] = str(class_data)
     return result
 
+def build_get_selectable_course_list_request_data(semester: str) -> dict:
+    """
+    构造获取可选择的课程的请求数据
+    :param semester: 学年学期
+    :return: 字典形式数据
+    """
+    tempJson = {
+        "zxjxjhh": semester,
+    }
+    result = GET_SELECTABLE_COURSE_DATA.copy()
+    result["conditionJson"] = str(tempJson).replace(r'\'', '').replace('+', '')
+    return result
+
+def build_get_select_course_list_request_data(pid: str, semester: str) -> dict:
+    """
+    构造获取选课课程列表的请求数据
+    :param pid: 课程ID，例如：0e902576-56cb-4e4f-a15a-3dce0b10a0b7
+    :param semester: 学年学期
+    :return: 字典形式数据
+    """
+    tempJson = {
+        'zxjxjhh': semester,
+        'kch': '',
+        'pid': pid,
+    }
+    result = GET_SELECT_COURSE_DATA.copy()
+    result["conditionJson"] = str(tempJson).replace('\\', '').replace('+', '')
+    return result
+
+def build_get_selected_course_list_request_data() -> dict:
+    """
+    构造获取已选择的课程列表的请求数据
+    :return: 
+    """
+    tempJson = {
+        "kch": "", 
+        "nopid": "zk"
+    }
+    result = GET_SELECTED_COURSE_LIST_DATA.copy()
+    result["conditionJson"] = str(tempJson).replace(r'\'', '').replace('+', '')
+    return result
+    
     

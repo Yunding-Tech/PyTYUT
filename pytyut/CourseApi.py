@@ -15,9 +15,11 @@ class CourseApi:
     
     session = None # Session信息
     node = None # 节点
+    semester = None
     def __init__(self, connection: Connection):
         self.node = connection.node
         self.session = connection.session
+        self.semester = connection.get_semester()
         if not self.session:
             raise LoginException("未检测到登录信息！")
     
@@ -82,7 +84,7 @@ class CourseApi:
                 score_dict_list.append(score_dict)
         return score_dict_list
 
-    def get_test_info(self, semester, moreInformation=False):
+    def get_test_info(self, semester: str="now", moreInformation=False):
         """
         获取考试安排信息
         moreInformation=True时，semester可以传任意参数，不受影响。
@@ -90,7 +92,10 @@ class CourseApi:
         :param semester: 学年学期，如'2020-2021-1-1'表示2020-2021学年第一学期，同理'2020-2021-2-1'为第二学期
         :return:返回考试安排的json信息
         """
-
+        if semester != "now":
+            target_semester = semester  # 注意这里是形参semester
+        else:
+            target_semester = self.semester  # 这里是类成员semester
         if moreInformation:
             req_url = self.node + 'Tschedule/C5KwBkks/GetKsxxByDesk'
             data = {
@@ -116,7 +121,7 @@ class CourseApi:
             raise LoginException().login_timeout()
         return res.json()
 
-    def get_course_schedule_by_bjh(self, semester, bjh):
+    def get_course_schedule_by_bjh(self, semester: str, bjh: str):
         """
         根据学年学期专业班级获取的课表Json信息
         :param semester: 学年学期，如 2022-2023学年秋季：'2022-2023-1-1'
@@ -133,5 +138,68 @@ class CourseApi:
         if '出错' in res.text or '教学管理服务平台(S)' in res.text:
             raise LoginException().login_timeout()
         return res.json()
-    
+
+    # TODO：未进行测试
+    def get_selectable_course_list(self, semester:str ='now'):
+        """
+        获取该学期选课列表
+        如果没有可以选的课total就是0
+        :param semester: 学年学期
+        :return:dict 返回可以进行选课的科目列表（不是详情）
+        """
+        req_url = self.node + 'Tschedule/C4Xkgl/GetXkPageListJson'
+        if semester != "now":
+            target_semester = semester # 注意这里是形参semester
+        else:
+            target_semester = self.semester # 这里是类成员semester
+            
+        data = build_get_selectable_course_list_request_data(target_semester)
+        res = self.session.post(req_url, data=data, headers=DEFAULT_HEADERS)
+        
+        if '出错' in res.text or '教学管理服务平台(S)' in res.text:
+            raise LoginException().login_timeout()
+        return res.json()
+
+    # TODO：未进行测试
+    def get_select_course_list(self, pid: str, semester: str='auto'):
+        """
+        获取选课课程列表
+        :param semester: 学年学期，不传值会自动获取
+        :param pid:  选课列表中的Id，比如0e902576-56cb-4e4f-a15a-3dce0b10a0b7（实际上是pid）
+        :return: list 返回
+        """
+        if semester != "now":
+            target_semester = semester  # 注意这里是形参semester
+        else:
+            target_semester = self.semester  # 这里是类成员semester
+            
+        data = build_get_select_course_list_request_data(pid, semester)
+        # 这个接口是有教学任务的课（比如体育课）
+        req_url = self.node + 'Tschedule/C4Xkgl/GetXkkcListByXh'
+        res = self.session.post(req_url, data=data, headers=DEFAULT_HEADERS)
+        if '出错' in res.text or '教学管理服务平台(S)' in res.text:
+            raise LoginException().login_timeout()
+        json_info = res.json()
+        
+        # 判断有没有用错接口
+        if json_info['total'] == 0:
+            # 这个接口是没有教学任务的课（比如学习通上的选修课）
+            url2 = self.node + 'Tschedule/C4Xkgl/GetXkkcListWithoutJxrwByXh'
+            res2 = self.session.post(url=url2, data=data, headers=DEFAULT_HEADERS)
+            return res2.json()
+        return res.json()
+
+    # TODO: 未进行测试
+    def get_selected_course_list(self):
+        """
+        获取已选择的课程列表
+        如果没有已经选的课total就是0
+        :return:dict 返回已经选课的科目列表（不是详情）
+        """
+        req_url = self.node + 'Tschedule/C4Xkgl/GetYxkcListByXhAndZxjxjhh'
+        data = build_get_selected_course_list_request_data()
+        res = self.session.post(req_url, data=data, headers=DEFAULT_HEADERS)
+        if '出错' in res.text or '教学管理服务平台(S)' in res.text:
+            raise LoginException().login_timeout()
+        return res.json()
         
