@@ -30,6 +30,8 @@ def test_node(url) -> bool:
     """
     try:
         req = requests.get(url, timeout=3, headers=DEFAULT_HEADERS)
+        if req.status_code == 502:
+            return False
         return True
     except Exception as e:
         return False

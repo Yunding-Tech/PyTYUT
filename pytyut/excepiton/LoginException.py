@@ -6,9 +6,9 @@
 """
 
 class LoginException(Exception):
-    msg = "登录失败"
+    msg: str
 
-    def __init__(self, msg : str="登录失败"):
+    def __init__(self, msg : str="未知异常"):
         self.msg = msg
 
     def get_msg(self):

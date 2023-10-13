@@ -10,16 +10,16 @@ import re
 from .excepiton.LoginException import LoginException
 from .Node import *
 from .DefaultString import *
+from .excepiton.CourseException import CourseException
 
 
 class Connection:
-    req_headers_add = {}  # 设置全局请求头（用于特殊节点的请求验证）
     node = NODE_URLS[1]  # 设置默认节点为节点2
-    default_headers = DEFAULT_HEADERS # 默认头
+    default_headers = DEFAULT_HEADERS # 默认  头
     username = None # 账号
     __password = None # 密码
     session = None
-    __real_name = None # 真实姓名
+    real_name = None # 真实姓名
 
     def __init__(self):
         pass
@@ -29,18 +29,15 @@ class Connection:
             # 默认节点失效，重新选择节点
             self.node = auto_node_choose()
         
-        # TODO: 不知道未来还需不需要校园网账号密码，源码还没看完先留着
         self.username = username
         self.__password = password
         
         self.session = requests.Session()
         login_url = self.node + 'Login/CheckLogin'
         # 创建会话，获取ASP.NET_SessionId的Cookies
-        self.default_headers.update(self.req_headers_add)
         self.session.get(self.node, headers=self.default_headers)
         login_data = build_login_data(username, password)
         headers_check_login = build_checkLogin_headers(self.node)
-        headers_check_login.update(self.req_headers_add)
         login_res = self.session.post(url=login_url, data=login_data, headers=headers_check_login)
         if '登录成功' in login_res.text:
             print(login_res.json()['message'][:-1], end='：')
@@ -48,7 +45,7 @@ class Connection:
             home_res = self.session.get(url=home_url, headers=self.default_headers).text
             html = home_res.replace(' ', '').replace('\n', '').replace('\t', '').replace('\r', '')
             name_pattern = '<small>Welcome,</small>([^*]*)</span><ic'
-            self.__real_name = re.search(name_pattern, html, ).group(1)
+            self.real_name = re.search(name_pattern, html, ).group(1)
             return {'http_code': login_res.status_code, 'msg': '登录成功', 'info': self.__real_name}
         else:
             try:
@@ -83,6 +80,24 @@ class Connection:
         # 字符串替换法，会导致日期和英文姓名中的空格消失
         # result_dict = eval(str(dict(result)).replace('：', '').replace(r'\n', '').replace(' ', '').replace(r'\r', ''))
         result_dict['avatar'] = avatar
+        return result_dict
+
+    # TODO: 未进行测试
+    def get_total_grades_result(self):
+        """
+        获取GPA、排名、总成绩等的Json信息
+        :return: list 返回获取GPA、排名、总成绩等的Json信息的json信息
+        """
+        req_url = self.node + 'Tschedule/C6Cjgl/GetXskccjResult'
+        # 这里请求数据与获取课程成绩用的数据是一样的
+        res = self.session.post(req_url, data=GET_COURSE_SCORE_REQUEST_DATA, headers=self.default_headers)
+        if '出错' in res.text or '教学管理服务平台(S)' in res.text:
+            raise LoginException().login_timeout()
+        if '评教未完成' in res.text:
+            raise CourseException("评教未完成，系统限制不予允许查询成绩！")
+        key_info_list = re.findall('<div class="profile-info-name">([^<]*?)</div>', res.text)
+        value_info_list = re.findall('<span>([^<]*?)</span>', res.text)
+        result_dict = dict(zip(key_info_list, value_info_list))
         return result_dict
     
     
