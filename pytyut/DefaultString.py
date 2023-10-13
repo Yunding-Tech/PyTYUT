@@ -116,6 +116,7 @@ GET_COURSE_SCHEDULE_BY_CLASSROOM_REQUEST_DATA = {
     'pagination[order]': 'asc'
 }
 
+
 def build_checkLogin_headers(node: str) -> dict:
     """
     构造登录检测的请求头
@@ -246,4 +247,3 @@ def build_get_course_schedule_by_classroom(xnxq: str, xqh: str, jxlh: str, jash:
     result = GET_COURSE_SCHEDULE_BY_CLASSROOM_REQUEST_DATA.copy()
     result["pagination[conditionJson]"] = str(tempData)
     return result
-    

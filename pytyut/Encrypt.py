@@ -12,6 +12,7 @@ import base64
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_v1_5
 
+
 def RSA_encrypt(user_name: str) -> str:
     """
     RSA公钥加密

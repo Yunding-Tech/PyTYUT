@@ -15,23 +15,23 @@ from .excepiton.CourseException import CourseException
 
 class Connection:
     node = NODE_URLS[1]  # 设置默认节点为节点2
-    default_headers = DEFAULT_HEADERS # 默认  头
-    username = None # 账号
-    __password = None # 密码
+    default_headers = DEFAULT_HEADERS  # 默认  头
+    username = None  # 账号
+    __password = None  # 密码
     session = None
-    real_name = None # 真实姓名
+    real_name = None  # 真实姓名
 
     def __init__(self):
         pass
-    
+
     def login(self, username: str, password: str) -> dict:
         if test_node(self.node):
             # 默认节点失效，重新选择节点
             self.node = auto_node_choose()
-        
+
         self.username = username
         self.__password = password
-        
+
         self.session = requests.Session()
         login_url = self.node + 'Login/CheckLogin'
         # 创建会话，获取ASP.NET_SessionId的Cookies
@@ -75,7 +75,8 @@ class Connection:
         param = '<div class="profile-info-name">([^^]*?)</div>[^^]*?<[^^]*?>(.*)</[^^]*?>'
         result = re.findall(param, res.text)
         # 列表生成法，可能会慢一些
-        result_list = [(name.replace('：', '').replace('\n', '').replace(' ', '').replace('\r', ''), value) for name, value in result]
+        result_list = [(name.replace('：', '').replace('\n', '').replace(' ', '').replace('\r', ''), value) for
+                       name, value in result]
         result_dict = dict(result_list)
         # 字符串替换法，会导致日期和英文姓名中的空格消失
         # result_dict = eval(str(dict(result)).replace('：', '').replace(r'\n', '').replace(' ', '').replace(r'\r', ''))
@@ -99,5 +100,3 @@ class Connection:
         value_info_list = re.findall('<span>([^<]*?)</span>', res.text)
         result_dict = dict(zip(key_info_list, value_info_list))
         return result_dict
-    
-    

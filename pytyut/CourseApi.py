@@ -13,14 +13,15 @@ from .excepiton.LoginException import LoginException
 from .Encrypt import RSA_encrypt
 from .excepiton.CourseException import CourseException
 
+
 class CourseApi:
-    
-    session = None # Session信息
+    session = None  # Session信息
     node: str
     semester: str
     username: str
     real_name: str
     connection: Connection
+
     def __init__(self, connection: Connection):
         self.node = connection.node
         self.session = connection.session
@@ -30,7 +31,7 @@ class CourseApi:
         self.connection = connection
         if not self.session:
             raise LoginException("未检测到登录信息！")
-    
+
     def get_course_schedule(self) -> dict:
         """
         获取自己的课表信息
@@ -40,7 +41,7 @@ class CourseApi:
         if '出错' in res.text or '教学管理服务平台(S)' in res.text:
             raise LoginException().login_timeout()
         return res.json()
-    
+
     def get_all_course_score(self, moreInformation=False) -> list:
         """
         获取自己的课程成绩
@@ -60,13 +61,13 @@ class CourseApi:
 
         req_url = self.node + 'Tschedule/C6Cjgl/GetKccjResult'
         res = self.session.post(req_url, headers=DEFAULT_HEADERS, data=GET_COURSE_SCORE_REQUEST_DATA)
-        
+
         if '出错' in res.text or '教学管理服务平台(S)' in res.text:
             raise LoginException().login_timeout()
-        
+
         if '评教未完成' in res.text:
             raise CourseException("评教未完成，系统限制不予允许查询成绩！")
-        
+
         # 正则匹配学年学期，按照学年学期分开每一个片段
         time_list = re.findall(r'\d{4}-\d{4}学年[\u4e00-\u9fa5]', res.text)
         score_dict_list = list()
@@ -92,7 +93,7 @@ class CourseApi:
                 score_dict_list.append(score_dict)
         return score_dict_list
 
-    def get_test_info(self, semester: str="now", moreInformation=False) -> list:
+    def get_test_info(self, semester: str = "now", moreInformation=False) -> list:
         """
         获取考试安排信息
         moreInformation=True时，semester可以传任意参数，不受影响。
@@ -148,7 +149,7 @@ class CourseApi:
         return res.json()
 
     # TODO：未进行测试
-    def get_selectable_course_list(self, semester:str ='now') -> dict:
+    def get_selectable_course_list(self, semester: str = 'now') -> dict:
         """
         获取该学期选课列表
         如果没有可以选的课total就是0
@@ -157,19 +158,19 @@ class CourseApi:
         """
         req_url = self.node + 'Tschedule/C4Xkgl/GetXkPageListJson'
         if semester != "now":
-            target_semester = semester # 注意这里是形参semester
+            target_semester = semester  # 注意这里是形参semester
         else:
-            target_semester = self.semester # 这里是类成员semester
-            
+            target_semester = self.semester  # 这里是类成员semester
+
         data = build_get_selectable_course_list_request_data(target_semester)
         res = self.session.post(req_url, data=data, headers=DEFAULT_HEADERS)
-        
+
         if '出错' in res.text or '教学管理服务平台(S)' in res.text:
             raise LoginException().login_timeout()
         return res.json()
 
     # TODO：未进行测试
-    def get_select_course_list(self, pid: str, semester: str='auto') -> dict:
+    def get_select_course_list(self, pid: str, semester: str = 'auto') -> dict:
         """
         获取选课课程列表
         :param semester: 学年学期，不传值会自动获取
@@ -180,7 +181,7 @@ class CourseApi:
             target_semester = semester  # 注意这里是形参semester
         else:
             target_semester = self.semester  # 这里是类成员semester
-            
+
         data = build_get_select_course_list_request_data(pid, semester)
         # 这个接口是有教学任务的课（比如体育课）
         req_url = self.node + 'Tschedule/C4Xkgl/GetXkkcListByXh'
@@ -188,7 +189,7 @@ class CourseApi:
         if '出错' in res.text or '教学管理服务平台(S)' in res.text:
             raise LoginException().login_timeout()
         json_info = res.json()
-        
+
         # 判断有没有用错接口
         if json_info['total'] == 0:
             # 这个接口是没有教学任务的课（比如学习通上的选修课）
@@ -210,7 +211,7 @@ class CourseApi:
         if '出错' in res.text or '教学管理服务平台(S)' in res.text:
             raise LoginException().login_timeout()
         return res.json()
-    
+
     def get_set_cookie(self, headers: dict) -> str:
         """
         访问一个伪装URL获取Set-Cookie  用于选课退课
@@ -222,7 +223,7 @@ class CourseApi:
         text = res_test.replace(' ', '').replace('\n', '').replace('\t', '').replace('\r', '')
         name_pattern = '<inputname="__RequestVerificationToken"type="hidden"value="([^*]*)"/>'
         return re.search(name_pattern, text, ).group(1)
-    
+
     # TODO: 未经测试
     def select_course(self, json_info) -> dict:
         """
@@ -294,5 +295,3 @@ class CourseApi:
         """
         api = CourseApi(self.connection)
         return api.get_course_schedule_by_classroom(xnxq, xqh, jxlh, jash)
-    
-        
