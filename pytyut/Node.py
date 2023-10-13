@@ -9,6 +9,7 @@ import requests
 from .DefaultString import DEFAULT_HEADERS, NODE_URLS
 from .excepiton.NodeExcepiton import NodeException
 
+
 def auto_node_choose() -> str:
     """
     自动确认登录节点
@@ -21,6 +22,7 @@ def auto_node_choose() -> str:
         if test_node(i):
             return i
     raise NodeException("未检测到可用节点！")
+
 
 def test_node(url) -> bool:
     """

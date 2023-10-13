@@ -5,6 +5,7 @@
 @Time : 2023/10/11 16:54
 """
 
+
 class NodeException(Exception):
     msg = "节点异常"
 

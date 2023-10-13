@@ -18,6 +18,7 @@ class ClassApi:
         self.session = connection.session
         if not self.session:
             raise LoginException("未检测到登录信息！")
+
     def get_major_class_tree(self, semester):
         """
         获取历届学院专业班级树的Json信息

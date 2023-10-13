@@ -78,11 +78,10 @@ class BuildingApi:
         :param jash: str 教室代号，如A203
         :return:
         """
-        
+
         data = build_get_course_schedule_by_classroom(xnxq, xqh, jxlh, jash)
         req_url = self.node + 'Tschedule/Zhcx/GetSjjsSjddByJash'
         res = self.session.post(req_url, data=data, headers=DEFAULT_HEADERS)
         if '出错' in res.text or '教学管理服务平台(S)' in res.text:
             raise LoginException().login_timeout()
         return res.json()
-    
