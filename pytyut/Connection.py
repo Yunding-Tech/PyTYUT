@@ -46,7 +46,7 @@ class Connection:
             html = home_res.replace(' ', '').replace('\n', '').replace('\t', '').replace('\r', '')
             name_pattern = '<small>Welcome,</small>([^*]*)</span><ic'
             self.real_name = re.search(name_pattern, html, ).group(1)
-            return {'http_code': login_res.status_code, 'msg': '登录成功', 'info': self.__real_name}
+            return {'http_code': login_res.status_code, 'msg': '登录成功', 'info': self.real_name}
         else:
             try:
                 error_info = login_res.json()['message']
@@ -83,7 +83,6 @@ class Connection:
         result_dict['avatar'] = avatar
         return result_dict
 
-    # TODO: 未进行测试
     def get_total_grades_result(self):
         """
         获取GPA、排名、总成绩等的Json信息

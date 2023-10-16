@@ -148,7 +148,7 @@ class CourseApi:
             raise LoginException().login_timeout()
         return res.json()
 
-    # TODO：未进行测试
+    # TODO：测试有误
     def get_selectable_course_list(self, semester: str = 'now') -> dict:
         """
         获取该学期选课列表
@@ -169,8 +169,8 @@ class CourseApi:
             raise LoginException().login_timeout()
         return res.json()
 
-    # TODO：未进行测试
-    def get_select_course_list(self, pid: str, semester: str = 'auto') -> dict:
+    # TODO：测试有误
+    def get_select_course_list(self, pid: str, semester: str = 'now') -> dict:
         """
         获取选课课程列表
         :param semester: 学年学期，不传值会自动获取
@@ -181,7 +181,7 @@ class CourseApi:
             target_semester = semester  # 注意这里是形参semester
         else:
             target_semester = self.semester  # 这里是类成员semester
-
+            
         data = build_get_select_course_list_request_data(pid, semester)
         # 这个接口是有教学任务的课（比如体育课）
         req_url = self.node + 'Tschedule/C4Xkgl/GetXkkcListByXh'
@@ -198,7 +198,6 @@ class CourseApi:
             return res2.json()
         return res.json()
 
-    # TODO: 未进行测试
     def get_selected_course_list(self) -> dict:
         """
         获取已选择的课程列表
