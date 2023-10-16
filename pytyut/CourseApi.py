@@ -148,7 +148,6 @@ class CourseApi:
             raise LoginException().login_timeout()
         return res.json()
 
-    # TODO：测试有误
     def get_selectable_course_list(self, semester: str = 'now') -> dict:
         """
         获取该学期选课列表
@@ -169,7 +168,6 @@ class CourseApi:
             raise LoginException().login_timeout()
         return res.json()
 
-    # TODO：测试有误
     def get_select_course_list(self, pid: str, semester: str = 'now') -> dict:
         """
         获取选课课程列表
