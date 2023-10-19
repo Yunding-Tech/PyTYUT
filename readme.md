@@ -11,4 +11,4 @@
 
 # 接口文档
 
-具体的使用方法，请查看我们的[Wiki文档]("https://github.com/Yunding-Tech/PyTYUT/wiki")。
+具体的使用方法，请查看我们的[Wiki文档](https://github.com/Yunding-Tech/PyTYUT/wiki/%E5%BF%AB%E9%80%9F%E5%BC%80%E5%A7%8B)。
